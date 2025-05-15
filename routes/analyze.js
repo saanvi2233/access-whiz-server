@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const puppeteer=require('puppeteer'); // to launch the browser
 const axeCore = require('axe-core'); // to run the accessibility tests
-
+const Analysis = require('../models/Analysis');
+ 
 router.post('/', async (req, res) => {
     const { url } = req.body; // get the url from the request body
+
     try{
         const browser = await puppeteer.launch({ headless: true }); // launch the browser
         const page = await browser.newPage(); // open a new page    
@@ -21,4 +23,28 @@ router.post('/', async (req, res) => {
     }
 });
 
-module.exports = router;    
+// Route to save analysis
+router.post('/save', async (req, res) => {
+  try {
+    const { url, violations } = req.body;
+
+    const saved = await Analysis.create({ url, violations });
+    res.status(201).json(saved);
+  } catch (error) {
+    console.error('Error saving analysis:', error);
+    res.status(500).json({ error: 'Failed to save analysis' });
+  }
+});
+
+// Route to get all saved analyses
+router.get('/all', async (req, res) => {
+  try {
+    const allAnalyses = await Analysis.find().sort({ date: -1 });
+    res.json(allAnalyses);
+  } catch (error) {
+    console.error('Error fetching analyses:', error);
+    res.status(500).json({ error: 'Failed to fetch analyses' });
+  }
+});
+
+module.exports = router;

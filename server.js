@@ -1,20 +1,34 @@
-const express=require('express')
-const cors=require('cors')
-const app=express()
+// server.js
+require('dotenv').config(); // Load environment variables first
 
-const analyzeRouter=require('./routes/analyze') //importing the analyze route
-require('dotenv').config()  //to load the environmnet varibale
+const express = require('express');
+const cors = require('cors');
+const mongoose = require('mongoose');
+const analyzeRouter = require('./routes/analyze');
 
+const app = express();
 
-app.use(cors()) //to allow cross-origin requests
-app.use(express.json()) //to parse json data
-app.use('/analyze',analyzeRouter) //to use the analyze route
+// Middleware
+app.use(cors());
+app.use(express.json());
 
-app.get('/',(req,res)=>{
-    res.send('Hello from server!!')
+// Routes
+app.use('/analyze', analyzeRouter);
+
+app.get('/', (req, res) => {
+  res.send('Hello from server!!');
+});
+
+require('dotenv').config();
+
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 })
+.then(() => console.log('MongoDB connected'))
+.catch(err => console.error('MongoDB connection error:', err));
 
-const PORT=process.env.PORT || 5000
+  const PORT=process.env.PORT || 5000
 app.listen(PORT,()=>{
     console.log(`Server is running on port ${PORT}`)
 })
